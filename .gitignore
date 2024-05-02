@@ -1,0 +1,13 @@
+composer.phar
+composer.lock
+/vendor/
+
+/.phpunit.result.cache
+/phpcs.xml
+/phpunit.xml
+/infection.json5
+
+*.log
+.env
+.DS_Store
+.idea/

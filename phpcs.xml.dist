@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset>
+    <file>./src/</file>
+    <file>./tests/</file>
+
+    <arg value="sp"/>
+    <config name="testVersion" value="8.1-"/>
+
+    <rule ref="Inpsyde">
+        <exclude name="WordPress.WP"/>
+        <exclude name="WordPress.Security.EscapeOutput"/>
+        <exclude name="WordPress.PHP.DevelopmentFunctions"/>
+        <exclude name="WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting"/>
+        <exclude name="Inpsyde.CodeQuality.DisableMagicSerialize"/>
+    </rule>
+
+    <rule ref="Inpsyde.CodeQuality.Psr4">
+        <properties>
+            <property
+                name="psr4"
+                type="array"
+                value="
+                    Toobo\TypeChecker=>src,
+                    Toobo\TypeChecker\Tests=>tests/src|tests/cases
+                "
+            />
+        </properties>
+    </rule>
+</ruleset>

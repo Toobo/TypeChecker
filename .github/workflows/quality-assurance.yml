@@ -1,0 +1,82 @@
+name: Quality Assurance
+
+on:
+    push:
+        paths:
+            - '**workflows/quality-assurance.yml'
+            - '**.php'
+            - '**phpcs.xml.dist'
+            - '**phpunit.xml.dist'
+            - '**psalm.xml'
+    pull_request:
+        paths:
+            - '**workflows/quality-assurance.yml'
+            - '**.php'
+            - '**phpcs.xml.dist'
+            - '**phpunit.xml.dist'
+            - '**psalm.xml'
+    workflow_dispatch:
+        inputs:
+            jobs:
+                required: true
+                type: choice
+                default: 'Run all'
+                description: 'Choose jobs to run'
+                options:
+                    - 'Run all'
+                    - 'Run PHPCS only'
+                    - 'Run Psalm only'
+                    - 'Run lint only'
+                    - 'Run static analysis'
+                    - 'Run unit tests only'
+                    - 'Run mutation tests only'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    lint:
+        if: ${{ (github.event_name != 'workflow_dispatch') || ((github.event.inputs.jobs == 'Run all') || (github.event.inputs.jobs == 'Run lint only') || (github.event.inputs.jobs == 'Run static analysis')) }}
+        uses: inpsyde/reusable-workflows/.github/workflows/lint-php.yml@main
+        strategy:
+            matrix:
+                php: [ '8.1', '8.2', '8.3' ]
+        with:
+            PHP_VERSION: ${{ matrix.php }}
+            LINT_ARGS: '-e php --colors --show-deprecated ./src'
+
+    coding-standards-analysis:
+        if: ${{ (github.event_name != 'workflow_dispatch') || ((github.event.inputs.jobs == 'Run all') || (github.event.inputs.jobs == 'Run PHPCS only') || (github.event.inputs.jobs == 'Run static analysis')) }}
+        uses: inpsyde/reusable-workflows/.github/workflows/coding-standards-php.yml@main
+
+    static-code-analysis:
+        if: ${{ (github.event_name != 'workflow_dispatch') || ((github.event.inputs.jobs == 'Run all') || (github.event.inputs.jobs == 'Run Psalm only') || (github.event.inputs.jobs == 'Run static analysis')) }}
+        uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@main
+        strategy:
+            matrix:
+                php: [ '8.1', '8.2', '8.3' ]
+        with:
+            PHP_VERSION: ${{ matrix.php }}
+            PSALM_ARGS: --output-format=github --no-suggestions --no-cache --no-diff --find-unused-psalm-suppress
+
+    unit-tests:
+        if: ${{ (github.event_name != 'workflow_dispatch') || ((github.event.inputs.jobs == 'Run all') || (github.event.inputs.jobs == 'Run unit tests only')) }}
+        uses: inpsyde/reusable-workflows/.github/workflows/tests-unit-php.yml@main
+        strategy:
+            matrix:
+                php: [ '8.1', '8.2', '8.3' ]
+        with:
+            PHP_VERSION: ${{ matrix.php }}
+            PHPUNIT_ARGS: '--no-coverage'
+
+    mutation-tests:
+        if: ${{ (github.event_name != 'workflow_dispatch') || ((github.event.inputs.jobs == 'Run all') || (github.event.inputs.jobs == 'Run mutation tests only')) }}
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  tools: infection, phpunit:10
+            - run: infection --min-covered-msi=95 --threads=max
