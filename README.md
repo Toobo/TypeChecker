@@ -18,7 +18,7 @@ is_a('iterable|MyThing|(Iterator&Countable)|null', $thing);
 
 Then this package is for you. But there's more.
 
-`is_a()` accepts a type string, but sometimes one wants to check against a [`ReflectionType`](https://www.php.net/manual/it/class.reflectiontype.php), or even a [`ReflectionClass`](https://www.php.net/manual/it/class.reflectionclass.php) and this package can do those things as well.
+`is_a()` accepts a type string, but sometimes one wants to check against a [`ReflectionType`](https://www.php.net/manual/it/class.reflectiontype.php), and this package can do that as well.
 
 An example **with a string**:
 
@@ -37,14 +37,6 @@ function test(iterable|MyThing|(Iterator&Countable)|null $param) {}
 $refType = (new ReflectionFunction('test'))->getParameters()[0]->getType();
 
 Type::byReflectionType($refType)->satisfiedBy($thing);
-```
-
-and with a **`ReflectionClass`**:
-
-```php
-use Toobo\TypeChecker\Type;
-
-Type::byReflectionType(new ReflectionClass($this))->satisfiedBy($this);
 ```
 
 
