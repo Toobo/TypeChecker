@@ -26,4 +26,8 @@
             />
         </properties>
     </rule>
+
+    <rule ref="Inpsyde.CodeQuality.FunctionLength">
+        <exclude-pattern>./tests/</exclude-pattern>
+    </rule>
 </ruleset>

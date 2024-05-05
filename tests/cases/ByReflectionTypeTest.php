@@ -143,16 +143,22 @@ class ByReflectionTypeTest extends TestCase
     {
         $this->requireDnfTypes();
 
-        $func = static function (
-            (\Countable & \ArrayAccess)
-            | (\Countable & \Stringable)
-            | null
-            | float
-            | false $param
-        ): void {
-        };
+        eval( // phpcs:ignore
+            <<<'PHP'
+            $func = static function (
+                (\Countable & \ArrayAccess)
+                | (\Countable & \Stringable)
+                | null
+                | float
+                | false $param
+            ): void {};
+            PHP
+        );
 
+        // phpcs:disable VariableAnalysis
+        /** @var \Closure $func */
         $ref = $this->extractTypeFromCallback($func);
+        // phpcs:enable VariableAnalysis
         $type = Type::byReflectionType($ref);
 
         $string1 = (string) $ref;

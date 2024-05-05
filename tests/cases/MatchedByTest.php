@@ -83,13 +83,20 @@ class MatchedByTest extends TestCase
     {
         $this->requireDnfTypes();
 
-        $func = static fn (
-            (\ArrayAccess & \Countable)
-            | (Reorderable & SelfDescribing)
-            | null $param
-        ): int => 0;
+        eval( // phpcs:ignore
+            <<<'PHP'
+             $func = static fn (
+                (ArrayAccess & Countable)
+                | (PHPUnit\Framework\Reorderable & PHPUnit\Framework\SelfDescribing)
+                | null $param
+            ): int => 0;
+            PHP
+        );
 
+        // phpcs:disable VariableAnalysis
+        /** @var \Closure $func */
         $left = Type::byReflectionType($this->extractTypeFromCallback($func));
+        // phpcs:enable VariableAnalysis
 
         $right1 = Type::byString(__CLASS__);
         $right2 = Type::byString(TestCase::class);
