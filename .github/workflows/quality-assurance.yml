@@ -49,6 +49,8 @@ jobs:
     coding-standards-analysis:
         if: ${{ (github.event_name != 'workflow_dispatch') || ((github.event.inputs.jobs == 'Run all') || (github.event.inputs.jobs == 'Run PHPCS only') || (github.event.inputs.jobs == 'Run static analysis')) }}
         uses: inpsyde/reusable-workflows/.github/workflows/coding-standards-php.yml@main
+        with:
+            PHP_VERSION: '8.3'
 
     static-code-analysis:
         if: ${{ (github.event_name != 'workflow_dispatch') || ((github.event.inputs.jobs == 'Run all') || (github.event.inputs.jobs == 'Run Psalm only') || (github.event.inputs.jobs == 'Run static analysis')) }}
@@ -78,5 +80,6 @@ jobs:
             - uses: shivammathur/setup-php@v2
               with:
                   php-version: '8.3'
-                  tools: infection, phpunit:10
+                  tools: infection
+            - uses: ramsey/composer-install@v3
             - run: infection --min-covered-msi=95 --threads=max
