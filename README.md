@@ -1,6 +1,6 @@
 # Type Checker
 
-
+[![Quality Assurance](https://github.com/Toobo/TypeChecker/actions/workflows/quality-assurance.yml/badge.svg)](https://github.com/Toobo/TypeChecker/actions/workflows/quality-assurance.yml)
 
 ## What is this
 
