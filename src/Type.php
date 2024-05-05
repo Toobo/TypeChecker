@@ -296,7 +296,6 @@ final class Type implements \Stringable, \JsonSerializable
         $instance = new static();
 
         foreach ($type->getTypes() as $aType) {
-            /** @psalm-suppress RedundantConditionGivenDocblockType */
             if ($aType instanceof \ReflectionNamedType) {
                 $instance = $instance->merge(static::createFromNamedType($aType));
                 continue;
