@@ -1,5 +1,14 @@
 {
     "name": "toobo/type-checker",
+    "description": "Library to check values against PHP types, is_a() on steroids.",
+    "keywords": [
+        "type",
+        "types",
+        "type check",
+        "is_a",
+        "instanceof",
+        "instance of"
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "MIT",
