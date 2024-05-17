@@ -31,6 +31,54 @@ class ByReflectionTypeTest extends TestCase
 
     /**
      * @test
+     * @dataProvider provideLateStaticBindingThrow
+     */
+    public function testLateStaticBindingThrows(string $type): void
+    {
+        $before = match (random_int(1, 12)) {
+            1, 5, 9 => '',
+            2, 6, 10 => '?',
+            3, 7, 11 => 'Foo|',
+            4, 8, 12 => 'string|',
+        };
+
+        $after = '';
+        if ($before !== '?') {
+            $after = match (random_int(1, 9)) {
+                1, 4, 7 => '',
+                2, 5, 8 => '|null',
+                3, 6, 9 => '|callable',
+            };
+        }
+
+        // phpcs:disable VariableAnalysis, Squiz.PHP.Eval
+        eval(sprintf('$func = fn (): %s%s%s => 1;', $before, $type, $after));
+        /**
+         * @var \Closure $func
+         * @var \ReflectionType $ref
+         */
+        $ref = (new \ReflectionFunction($func))->getReturnType();
+        // phpcs:enable VariableAnalysis, Squiz.PHP.Eval
+
+        $this->expectExceptionMessageMatches('/late/i');
+
+        Type::byReflectionType($ref);
+    }
+
+    /**
+     * @return \Generator
+     */
+    public static function provideLateStaticBindingThrow(): \Generator
+    {
+        yield from [
+            ['static'],
+            ['self'],
+            ['parent'],
+        ];
+    }
+
+    /**
+     * @test
      */
     public function testCacheReturnDifferentType(): void
     {

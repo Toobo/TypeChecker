@@ -80,6 +80,65 @@ class ByStringTest extends TestCase
 
     /**
      * @test
+     */
+    public function testReservedWordThrows(): void
+    {
+        $this->expectExceptionMessageMatches('/valid/i');
+
+        Type::byString('Meh|(Yield&Foo)');
+    }
+
+    /**
+     * @test
+     */
+    public function testNullableReservedWordThrows(): void
+    {
+        $this->expectExceptionMessageMatches('/valid/i');
+
+        Type::byString('?goto');
+    }
+
+    /**
+     * @test
+     * @dataProvider provideLateStaticBindingThrow
+     */
+    public function testLateStaticBindingThrows(string $type): void
+    {
+        $before = match (random_int(1, 12)) {
+            1, 5, 9 => '',
+            2, 6, 10 => '?',
+            3, 7, 11 => 'Foo|',
+            4, 8, 12 => 'string|',
+        };
+
+        $after = '';
+        if ($before !== '?') {
+            $after = match (random_int(1, 9)) {
+                1, 4, 7 => '',
+                2, 5, 8 => '|null',
+                3, 6, 9 => '|(ArrayAccess&Countable)',
+            };
+        }
+
+        $this->expectExceptionMessageMatches('/late/i');
+
+        Type::byString($before . $type . $after);
+    }
+
+    /**
+     * @return \Generator
+     */
+    public static function provideLateStaticBindingThrow(): \Generator
+    {
+        yield from [
+            ['static'],
+            ['self'],
+            ['parent'],
+        ];
+    }
+
+    /**
+     * @test
      * @dataProvider provideStandaloneInUnionThrows
      */
     public function testStandaloneInUnionThrows(string $type1, string $type2): void

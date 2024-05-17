@@ -40,6 +40,12 @@ Type::byReflectionType($refType)->satisfiedBy($thing);
 ```
 
 
+### Note: Instantiation by string is "checked"
+
+**`Type` instantiation by string is checked** to make sure the string is a valid type (or at least, looks like a valid type). Passing a string that does not contain valid PHP syntax for a type definition (including usage of reserved PHP keywords) will result in an error being thrown.
+
+On the other hand, instantiation by `ReflectionType` is "unchecked" because if we obtain a `ReflectionType` instance, we know that's a valid PHP type. The only possible error building from `ReflectionType` can be caused by using "late state binding" types, more on this below.
+
 
 ## A deeper look
 
@@ -72,6 +78,13 @@ assert(Type::byString('ArrayObject')->isA(Type::byString('IteratorAggregate&Coun
 `Type::isA()` behavior can be described as: _if a function's argument type is represented by the type passed as argument, would it be satisfied by a value whose type is represented by the instance calling the method_?
 
 
+### Late Static Binding Types
+
+PHP support "late state binding" (LSB) types `self`, `parent` and `static` in return-only type declaration. These types are called "late" as their actual type is calculated at _runtime_.
+
+The main goal of this library is to _check_ types, and it is impossible to check LSB types without knowing the context where they were used, and such context is missing in a simple string such as `"self"` or in a "`ReflectionType` instance.
+
+For that reason this library does *not support* them. Trying to create a `Type` instance from any type that reference those LSB types will result in an error being thrown.
 
 ### Type information
 

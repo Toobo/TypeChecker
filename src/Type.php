@@ -23,7 +23,7 @@ namespace Toobo\TypeChecker;
  */
 final class Type implements \Stringable, \JsonSerializable
 {
-    private const TYPE_REGEX = '[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*';
+    private const TYPE_REGEX = '[a-z_\x80-\xff][a-z0-9_\x80-\xff]*';
 
     private const DEFAULT_TYPES = [
         'mixed' => 'mixed',
@@ -92,6 +92,76 @@ final class Type implements \Stringable, \JsonSerializable
         ['object'],
         ['callable'],
         ['iterable'],
+    ];
+
+    private const RESERVED_WORDS = [
+        '__halt_compiler' => 0,
+        'abstract' => 0,
+        'and' => 0,
+        'as' => 0,
+        'break' => 0,
+        'case' => 0,
+        'catch' => 0,
+        'class' => 0,
+        'clone' => 0,
+        'const' => 0,
+        'continue' => 0,
+        'declare' => 0,
+        'default' => 0,
+        'die' => 0,
+        'do' => 0,
+        'echo' => 0,
+        'else' => 0,
+        'elseif' => 0,
+        'empty' => 0,
+        'enddeclare' => 0,
+        'endfor' => 0,
+        'endforeach' => 0,
+        'endif' => 0,
+        'endswitch' => 0,
+        'endwhile' => 0,
+        'eval' => 0,
+        'exit' => 0,
+        'extends' => 0,
+        'final' => 0,
+        'finally' => 0,
+        'fn' => 0,
+        'for' => 0,
+        'foreach' => 0,
+        'function' => 0,
+        'global' => 0,
+        'goto' => 0,
+        'if' => 0,
+        'implements' => 0,
+        'include' => 0,
+        'include_once' => 0,
+        'instanceof' => 0,
+        'insteadof' => 0,
+        'interface' => 0,
+        'isset' => 0,
+        'list' => 0,
+        'match' => 0,
+        'namespace' => 0,
+        'new' => 0,
+        'or' => 0,
+        'print' => 0,
+        'private' => 0,
+        'protected' => 0,
+        'public' => 0,
+        'readonly' => 0,
+        'require' => 0,
+        'require_once' => 0,
+        'return' => 0,
+        'switch' => 0,
+        'throw' => 0,
+        'trait' => 0,
+        'try' => 0,
+        'unset' => 0,
+        'use' => 0,
+        'var' => 0,
+        'while' => 0,
+        'xor' => 0,
+        'yield' => 0,
     ];
 
     /** @var array<string, Type> */
@@ -315,6 +385,7 @@ final class Type implements \Stringable, \JsonSerializable
     private static function splitNull(\ReflectionNamedType $type): array
     {
         $name = $type->getName();
+        static::assertNotLateStaticBinding($name);
         ($name === 'resource') and $name = '\\resource';
         $hasNull = $type->allowsNull() && ($name !== 'null') && ($name !== 'mixed');
 
@@ -362,9 +433,15 @@ final class Type implements \Stringable, \JsonSerializable
      */
     private static function assertValidTypeString(string $type, string $typeDef): void
     {
-        if (!preg_match('~^' . self::TYPE_REGEX . '(?:\\\\' . self::TYPE_REGEX . ')*$~', $type)) {
+        $test = strtolower($type);
+        if (
+            isset(self::RESERVED_WORDS[$test])
+            || !preg_match('~^' . self::TYPE_REGEX . '(?:\\\\' . self::TYPE_REGEX . ')*$~', $test)
+        ) {
             static::bailForInvalidDef($typeDef);
         }
+
+        static::assertNotLateStaticBinding($test);
     }
 
     /**
@@ -379,6 +456,32 @@ final class Type implements \Stringable, \JsonSerializable
                 __CLASS__,
                 'newByString',
                 $typeDef
+            )
+        );
+    }
+
+    /**
+     * @param string $type
+     * @return void
+     */
+    private static function assertNotLateStaticBinding(string $type): void
+    {
+        $invalid = match ($type) {
+            'self' => 'self',
+            'static' => 'static',
+            'parent' => 'parent',
+            default => null
+        };
+
+        if ($invalid === null) {
+            return;
+        }
+
+        throw new \Error(
+            sprintf(
+                '%s does not support "late state binding" type "%s".',
+                __CLASS__,
+                $invalid
             )
         );
     }
