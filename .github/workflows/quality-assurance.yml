@@ -8,6 +8,7 @@ on:
             - '**phpcs.xml.dist'
             - '**phpunit.xml.dist'
             - '**psalm.xml'
+            - '**composer.json'
     pull_request:
         paths:
             - '**workflows/quality-assurance.yml'
@@ -15,6 +16,7 @@ on:
             - '**phpcs.xml.dist'
             - '**phpunit.xml.dist'
             - '**psalm.xml'
+            - '**composer.json'
     workflow_dispatch:
         inputs:
             jobs:
@@ -32,7 +34,7 @@ on:
                     - 'Run mutation tests only'
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
+    group: "${{ github.workflow }}-${{ github.ref }}"
     cancel-in-progress: true
 
 jobs:
