@@ -40,13 +40,6 @@ Type::byReflectionType($refType)->satisfiedBy($thing);
 ```
 
 
-### Note: Instantiation by string is "checked"
-
-**`Type` instantiation by string is checked** to make sure the string is a valid type (or at least, looks like a valid type). Passing a string that does not contain valid PHP syntax for a type definition (including usage of reserved PHP keywords) will result in an error being thrown.
-
-On the other hand, instantiation by `ReflectionType` is "unchecked" because if we obtain a `ReflectionType` instance, we know that's a valid PHP type. The only possible error building from `ReflectionType` can be caused by using "late state binding" types, more on this below.
-
-
 ## A deeper look
 
 
@@ -76,6 +69,15 @@ assert(Type::byString('ArrayObject')->isA(Type::byString('IteratorAggregate&Coun
 `Type::matchedBy()` behavior can be described as: _if a function's argument type is represented by the type calling the method, would it be satisfied by a value whose type is represented by the type passed as argument_?
 
 `Type::isA()` behavior can be described as: _if a function's argument type is represented by the type passed as argument, would it be satisfied by a value whose type is represented by the instance calling the method_?
+
+
+
+### "Checked" VS "Unchecked" instantiation
+
+When instantiating a `Type` instance from a string, that is checked to make sure the string represents a valid type (or at least, looks like a valid type). Passing a string that does not contain valid PHP syntax for a type definition (including usage of reserved PHP keywords) will result in an error being thrown.
+
+On the other hand, instantiation by `ReflectionType` is "unchecked" because if we obtain a `ReflectionType` instance, we know that's a valid PHP type. The only possible error building from `ReflectionType` can be caused by using "late state binding" types, more on this below.
+
 
 
 ### Late Static Binding Types
